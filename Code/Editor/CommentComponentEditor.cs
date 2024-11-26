@@ -20,19 +20,19 @@ namespace CommentComponent
 
 		public override void OnInspectorGUI()
 		{
-			// Mostrar comentario.
+			// Draw comment.
 			if (editing == false)
 			{
 				EditorStyles.helpBox.richText = true;
-				EditorGUILayout.HelpBox("\n" + messageText + "\n", messageType);
+				EditorGUILayout.HelpBox("\n" + commentText + "\n", commentType);
 			}
 
-			// Mostrar la opcion de cambiar el mensaje al hacer click derecho.
+			// Show the option to change the comment on right click.
 			Event currentClick = Event.current;
 			if (currentClick.type == EventType.ContextClick)
 			{
 				GenericMenu menu = new GenericMenu();
-				menu.AddItem(new GUIContent("Editar comentario"), false, () =>
+				menu.AddItem(new GUIContent("Edit comment"), false, () =>
 				{
 					editing = true;
 					undoGroupIndex = Undo.GetCurrentGroup();
@@ -42,19 +42,19 @@ namespace CommentComponent
 				currentClick.Use();
 			}
 
-			// Editar comentario.
-			if (string.IsNullOrEmpty(messageText))
+			// Edit comment.
+			if (string.IsNullOrEmpty(commentText))
 				editing = true;
 			if (editing)
 			{
-				Undo.RecordObject(targetComment, "Changed Message");
+				Undo.RecordObject(targetComment, "Modified comment on " + targetComment.gameObject.name);
 
 				EditorGUILayout.Space();
-				messageText = GUILayout.TextArea(messageText, GUILayout.MaxHeight(EditorGUIUtility.singleLineHeight * 3));
-				messageType = (MessageType)EditorGUILayout.EnumPopup(messageType);
+				commentText = GUILayout.TextArea(commentText, GUILayout.MaxHeight(EditorGUIUtility.singleLineHeight * 3));
+				commentType = (MessageType)EditorGUILayout.EnumPopup(commentType);
 
 				EditorGUILayout.Space();
-				if (GUILayout.Button("Confirmar"))
+				if (GUILayout.Button("Save"))
 				{
 					editing = false;
 					Undo.CollapseUndoOperations(undoGroupIndex);
@@ -62,7 +62,7 @@ namespace CommentComponent
 			}
 		}
 
-		private string messageText
+		private string commentText
 		{
 			get
 			{
@@ -82,7 +82,7 @@ namespace CommentComponent
 			}
 		}
 
-		private MessageType messageType
+		private MessageType commentType
 		{
 			get
 			{
