@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEditor;
 
-
 namespace CommentComponent
 {
 	[CustomEditor(typeof(Comment))]
