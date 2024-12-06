@@ -64,6 +64,8 @@ namespace CommentComponent
 				targetComment.isFirstTimeDrawingEditor = false;
 				editing = true;
 			}
+
+			saveChangesMessage = "Do you want to save the changes made to your comment?";
 		}
 
 		public override void OnInspectorGUI()
