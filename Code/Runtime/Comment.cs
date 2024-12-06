@@ -7,5 +7,7 @@ namespace CommentComponent
 	{
 		[TextArea] public string text = "";
 		public int messageType = 1;
+
+		[HideInInspector] public bool isFirstTimeDrawingEditor = true;
 	}
 }

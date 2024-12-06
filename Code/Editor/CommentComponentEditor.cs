@@ -9,58 +9,6 @@ namespace CommentComponent
 		private Comment targetComment = null;
 		private bool editing = false;
 
-		int undoGroupIndex = -1;
-
-
-		private void OnEnable()
-		{
-			targetComment =	(Comment)target;
-		}
-
-		public override void OnInspectorGUI()
-		{
-			// Draw comment.
-			if (editing == false)
-			{
-				EditorStyles.helpBox.richText = true;
-				EditorGUILayout.HelpBox("\n" + commentText + "\n", commentType);
-			}
-
-			// Show the option to change the comment on right click.
-			Event currentClick = Event.current;
-			if (currentClick.type == EventType.ContextClick)
-			{
-				GenericMenu menu = new GenericMenu();
-				menu.AddItem(new GUIContent("Edit comment"), false, () =>
-				{
-					editing = true;
-					undoGroupIndex = Undo.GetCurrentGroup();
-				});
-				menu.ShowAsContext();
-
-				currentClick.Use();
-			}
-
-			// Edit comment.
-			if (string.IsNullOrEmpty(commentText))
-				editing = true;
-			if (editing)
-			{
-				Undo.RecordObject(targetComment, "Modified comment on " + targetComment.gameObject.name);
-
-				EditorGUILayout.Space();
-				commentText = GUILayout.TextArea(commentText, GUILayout.MaxHeight(EditorGUIUtility.singleLineHeight * 3));
-				commentType = (MessageType)EditorGUILayout.EnumPopup(commentType);
-
-				EditorGUILayout.Space();
-				if (GUILayout.Button("Save"))
-				{
-					editing = false;
-					Undo.CollapseUndoOperations(undoGroupIndex);
-				}
-			}
-		}
-
 		private string commentText
 		{
 			get
@@ -80,6 +28,7 @@ namespace CommentComponent
 				EditorUtility.SetDirty(targetComment);
 			}
 		}
+		string newCommentText = null;
 
 		private MessageType commentType
 		{
@@ -99,6 +48,75 @@ namespace CommentComponent
 				targetComment.messageType = (int)value;
 				EditorUtility.SetDirty(targetComment);
 			}
+		}
+		MessageType newCommentType = MessageType.None;
+
+
+		private void OnEnable()
+		{
+			targetComment =	(Comment)target;
+
+			newCommentText = commentText;
+			newCommentType = commentType;
+
+			if (targetComment.isFirstTimeDrawingEditor)
+			{
+				targetComment.isFirstTimeDrawingEditor = false;
+				editing = true;
+			}
+		}
+
+		public override void OnInspectorGUI()
+		{
+			// Draw comment.
+			if (editing == false)
+			{
+				EditorStyles.helpBox.richText = true;
+				EditorGUILayout.HelpBox("\n" + commentText + "\n", commentType);
+			}
+
+			// Show the option to change the comment on right click.
+			Event currentClick = Event.current;
+			if (currentClick.type == EventType.ContextClick)
+			{
+				GenericMenu menu = new GenericMenu();
+				menu.AddItem(new GUIContent("Edit comment"), false, () =>
+				{
+					editing = true;
+				});
+				menu.ShowAsContext();
+
+				currentClick.Use();
+			}
+
+			// Edit comment.
+			if (editing)
+			{
+				EditorGUILayout.Space();
+
+				newCommentText = GUILayout.TextArea(newCommentText, GUILayout.MaxHeight(EditorGUIUtility.singleLineHeight * 3));
+				newCommentType = (MessageType)EditorGUILayout.EnumPopup(newCommentType);
+				if (newCommentText != commentText || newCommentType != commentType)
+					hasUnsavedChanges = true;
+
+				EditorGUILayout.Space();
+				if (GUILayout.Button("Save"))
+				{
+					editing = false;
+					SaveChanges();
+				}
+			}
+		}
+
+		public override void SaveChanges()
+		{
+			if (!hasUnsavedChanges)
+				return;
+			base.SaveChanges();
+
+			Undo.RecordObject(targetComment, "Modified message on " + targetComment.name);
+			commentText = newCommentText;
+			commentType = newCommentType;
 		}
 	}
 }
